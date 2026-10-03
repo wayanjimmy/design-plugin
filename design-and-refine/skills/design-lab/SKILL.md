@@ -97,7 +97,7 @@ theme.boxShadow   // Elevation system
 
 ## Phase 1: Interview
 
-Use the **AskUserQuestion** tool for all interview steps. Adapt questions based on Design Memory if it exists.
+Use the **AskUserQuestion** tool for interview steps when available. In hosts without that tool (such as Pi), ask the same questions in chat and wait for the user's answers. Adapt questions based on Design Memory if it exists.
 
 ### Step 1.1: Scope & Target
 

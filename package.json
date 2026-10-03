@@ -1,0 +1,10 @@
+{
+  "name": "design-and-refine-pi",
+  "version": "1.1.0",
+  "private": true,
+  "keywords": ["pi-package", "design", "ui"],
+  "pi": {
+    "skills": ["./design-and-refine/skills"],
+    "prompts": ["./design-and-refine/pi-prompts"]
+  }
+}

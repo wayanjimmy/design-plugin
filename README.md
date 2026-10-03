@@ -1,6 +1,6 @@
 # Design and Refine
 
-A Claude Code plugin that helps you make confident UI design decisions through rapid iteration.
+A design exploration workflow for Claude Code, Antigravity CLI, and Pi.
 
 ## What It Does
 
@@ -29,7 +29,9 @@ Instead of guessing at the right design or going back-and-forth on revisions, yo
 
 ## Setup
 
-### 1. Add the marketplace
+### Claude Code
+
+#### 1. Add the marketplace
 
 In Claude Code, run:
 
@@ -37,13 +39,36 @@ In Claude Code, run:
 /plugin marketplace add 0xdesign/design-plugin
 ```
 
-### 2. Install the plugin
+#### 2. Install the plugin
 
 ```
 /plugin install design-and-refine@design-plugins
 ```
 
-That's it. The plugin is now available in any project.
+### Antigravity CLI (`agy`)
+
+From the **UI project's root**, copy the plugin directory from a local checkout of this repository:
+
+```bash
+mkdir -p .agents/plugins
+cp -R /path/to/design-plugin/design-and-refine .agents/plugins/design-and-refine
+agy plugin validate .agents/plugins/design-and-refine
+```
+
+Start `agy` in that project and request the `design-and-refine` Design Lab skill, for example `/design-and-refine:design-lab ProfileCard`. The plugin is scoped to this workspace, not installed into your global agy profile. If your agy version exposes the converted Claude commands, `/design-and-refine:start ProfileCard` and `/design-and-refine:cleanup` are also available; otherwise ask the agent to clean up the Design Lab files using the skill's cleanup rules.
+
+### Pi
+
+From the **UI project's root**, install the Pi package from a local checkout of this repository (use the full path to the repository root):
+
+```bash
+pi install -l /path/to/design-plugin
+pi list --approve
+```
+
+The `-l` flag records the package only in the UI project's `.pi/settings.json`; Pi may ask you to trust the project package on first use. Then start `pi` in that project and use `/design-and-refine-start ProfileCard` or `/design-and-refine-start` without a target. Use `/design-and-refine-cleanup` to inspect and remove temporary files after confirmation. Pi packages the shared Design Lab skill and these two prompt templates; no TypeScript extension is required. Pi does not run the Claude Code session-end hook, so use the cleanup command if you exit mid-session.
+
+For installation from Git instead of a checkout, run `pi install -l git:github.com/wayanjimmy/design-plugin` in the UI project (Pi needs access to that repository).
 
 ---
 
