@@ -8,3 +8,6 @@ user-sim/
 
 # Separate project (lives in its own repo)
 design-ide/
+
+# Amp local test copy of the plugin (source of truth is design-and-refine/)
+/.amp/plugins/
