@@ -1,6 +1,6 @@
 {
   "name": "design-and-refine",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Explore UI variations, collect element feedback, refine designs, and safely clean up the design lab",
   "skills": "./skills/",
   "hooks": {

@@ -749,6 +749,10 @@ export function FeedbackOverlay({
     return defaultState;
   });
 
+  // Keep the server and first client render identical before creating a portal.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
+
   const [, setHoveredElement] = useState<HTMLElement | null>(null);
   const [hoverRect, setHoverRect] = useState<DOMRect | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -1017,7 +1021,7 @@ export function FeedbackOverlay({
     return state.comments.findIndex((c) => c.id === comment.id) + 1;
   };
 
-  if (typeof window === 'undefined') return null;
+  if (!isMounted) return null;
 
   return createPortal(
     <>
