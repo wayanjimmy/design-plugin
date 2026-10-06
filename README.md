@@ -198,3 +198,18 @@ MIT
 ---
 
 Made by [0xdesigner](https://github.com/0xdesign)
+
+## Codex
+
+Register this repository as a local marketplace and install the plugin:
+
+```sh
+codex plugin marketplace add /absolute/path/to/design-plugin
+codex plugin add design-and-refine@jimmy-design-plugins
+```
+
+Start a fresh Codex session. Ask it to use the `design-lab` skill for your target,
+for example "Use design-and-refine's design-lab skill to explore ProfileCard".
+Ask for `design-cleanup` to remove session-owned temporary artifacts.
+The Codex adapter shares the existing workflow and React feedback template;
+Claude commands and hooks are not required. Non-React overlays require adaptation.

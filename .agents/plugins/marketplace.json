@@ -1,0 +1,12 @@
+{
+  "name": "jimmy-design-plugins",
+  "interface": { "displayName": "Jimmy's design plugins" },
+  "plugins": [
+    {
+      "name": "design-and-refine",
+      "source": { "source": "local", "path": "./design-and-refine" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Productivity"
+    }
+  ]
+}

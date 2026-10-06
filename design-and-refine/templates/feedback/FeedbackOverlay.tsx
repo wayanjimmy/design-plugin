@@ -15,7 +15,7 @@
  * - Click-to-comment on any element
  * - Numbered pins at comment locations
  * - Sidebar with all comments grouped by variant
- * - Submit modal with clipboard copy (paste into terminal for Claude)
+ * - Submit modal with clipboard copy (paste into terminal for the agent)
  */
 
 import React, {
@@ -1263,12 +1263,12 @@ export function FeedbackOverlay({
               {copySuccess && (
                 <div style={styles.successMessage}>
                   <span>✓</span>
-                  <span>Copied! Paste this into your terminal to send to Claude.</span>
+                  <span>Copied! Paste this into your terminal to send to the agent.</span>
                 </div>
               )}
 
               <div style={{ marginBottom: '12px', fontSize: '14px', color: '#4b5563' }}>
-                Click &quot;Copy to Clipboard&quot; then paste into your terminal to share feedback with Claude.
+                Click &quot;Copy to Clipboard&quot; then paste into your terminal to share feedback with the agent.
               </div>
 
               <div style={styles.modalPreview}>{state.formattedOutput}</div>

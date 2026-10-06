@@ -7,13 +7,38 @@ description: Conduct design interviews, generate five distinct UI variations in 
 
 This skill implements a complete design exploration workflow: interview, generate variations, collect feedback, refine, preview, and finalize.
 
+## Host compatibility and artifact ownership
+
+Resolve resources from this skill's installed directory. Read `./DESIGN_PRINCIPLES.md`
+and copy the self-contained overlay from `../../templates/feedback/FeedbackOverlay.tsx`.
+Do not assume the plugin repository is inside the user's UI project.
+
+Use the host's available question tool for interview and review questions. In Codex,
+use request_user_input_async when available, or request_user_input when its current
+mode permits it. Otherwise ask in chat and wait. Adapt option counts and multi-select
+questions to the tool's schema. Skip questions already answered by the user's request.
+
+Before creating files, inspect existing paths and Git changes. If `.claude-design/`
+or a proposed route already exists, inspect ownership and resume or ask before reuse.
+Record each created file and each integration edit in `.claude-design/artifacts.json`,
+including original content for edited files and hashes of the last session-written
+content. Update the record after each generation or refinement. Never overwrite an
+existing route. During cleanup, delete only recorded session-created files whose
+contents still match the recorded hash. Reverse integration edits only when their
+recorded content matches, otherwise preserve user changes and report the conflict.
+Remove empty session-created directories last. A route name is not proof of ownership.
+
+The bundled overlay supports React. For other frameworks, explain this limitation
+and agree on an adapted overlay or manual feedback before generating the lab.
+
 ## CRITICAL: Cleanup Behavior
 
-**All temporary files MUST be deleted when the process ends, whether by:**
+
+**Clean up session-owned temporary files when the design process ends, whether by:**
 - User confirms final design → cleanup, then generate plan
 - User aborts/cancels → cleanup immediately, no plan generated
 
-**Never leave `.claude-design/` or `__design_lab` routes behind.** If the user says "cancel", "abort", "stop", or "nevermind" at any point, confirm and then delete all temporary artifacts.
+**Remove session-owned lab and preview artifacts; preserve files with uncertain ownership or later user edits and report them.** If the user says "cancel", "abort", "stop", or "nevermind" at any point, confirm and then delete all temporary artifacts.
 
 ---
 
@@ -26,7 +51,7 @@ Check for lock files in the project root:
 - `pnpm-lock.yaml` → use `pnpm`
 - `yarn.lock` → use `yarn`
 - `package-lock.json` → use `npm`
-- `bun.lockb` → use `bun`
+- `bun.lock` or `bun.lockb` → use `bun`
 
 ### Framework Detection
 Check for config files:
@@ -97,11 +122,11 @@ theme.boxShadow   // Elevation system
 
 ## Phase 1: Interview
 
-Use the **AskUserQuestion** tool for interview steps when available. In hosts without that tool (such as Pi), ask the same questions in chat and wait for the user's answers. Adapt questions based on Design Memory if it exists.
+Use the host-compatible question flow described above for interview steps. Adapt questions based on Design Memory if it exists.
 
 ### Step 1.1: Scope & Target
 
-Ask these questions (can combine into single AskUserQuestion with multiple questions):
+Ask these questions (can combine into a single question-tool call with multiple questions):
 
 **Question 1: Scope**
 - Header: "Scope"
@@ -274,7 +299,7 @@ Display a summary to the user before proceeding.
 
 ### Directory Structure
 
-Create all files under `.claude-design/`:
+Store the design brief and temporary variants under `.claude-design/`; route entry points and the overlay live in the detected router directory:
 
 ```
 .claude-design/
@@ -300,20 +325,20 @@ Create all files under `.claude-design/`:
 └── run-log.md
 ```
 
-### Feedback System Setup (CRITICAL - NEVER SKIP)
+### Feedback System Setup (React)
 
-**The FeedbackOverlay is the PRIMARY feature of the Design Lab.** Without it, users cannot provide interactive feedback. NEVER generate a Design Lab without the FeedbackOverlay.
+**The FeedbackOverlay is the PRIMARY feature of the Design Lab.** Without it, users cannot provide interactive feedback. Include the FeedbackOverlay for React projects; use the agreed adaptation or manual feedback for other frameworks.
 
-**Reliability Strategy:** To avoid import path issues across different project configurations, create the FeedbackOverlay **directly in the route directory** (e.g., `app/design-lab/FeedbackOverlay.tsx`), NOT in `.claude-design/`. This ensures a simple relative import (`./FeedbackOverlay`) always works.
+**Reliability Strategy:** To avoid import path issues across different project configurations, create the FeedbackOverlay **directly in the route directory** (e.g., `app/%5F_design_lab/FeedbackOverlay.tsx`), NOT in `.claude-design/`. This ensures a simple relative import (`./FeedbackOverlay`) always works.
 
 **Required Files in Route Directory:**
 ```
-app/design-lab/           # or app/__design_lab/ if underscores work
+app/%5F_design_lab/           # Next.js encodes the first underscore to expose /__design_lab
 ├── page.tsx              # Main lab page with variants
 └── FeedbackOverlay.tsx   # Self-contained overlay component (copy from templates)
 ```
 
-**Template Source:** `design-and-refine/templates/feedback/FeedbackOverlay.tsx`
+**Template Source:** `../../templates/feedback/FeedbackOverlay.tsx`, relative to this skill directory
 
 **Why this approach:**
 - `.claude-design/` paths can fail due to bundler configurations
@@ -323,10 +348,10 @@ app/design-lab/           # or app/__design_lab/ if underscores work
 ### Route Integration
 
 **Next.js App Router:**
-Create `app/__design_lab/page.tsx` that imports from `.claude-design/lab/`
+Create `app/%5F_design_lab/page.tsx` that imports from `.claude-design/lab/`. Use `src/app/` when that is the detected router root. Next.js treats literal underscore-prefixed folders as private; `%5F` exposes the URL `/__design_lab`. Use the same encoding for the preview route.
 
 **Next.js Pages Router:**
-Create `pages/__design_lab.tsx` that imports from `.claude-design/lab/`
+Create `pages/__design_lab.tsx` that imports from `.claude-design/lab/`, or use `src/pages/` when detected.
 
 **Vite React:**
 - If React Router exists: add route to `/__design_lab`
@@ -480,35 +505,18 @@ export default function DesignLabPage() {
 
 ## Phase 4: Present Design Lab to User
 
-After generating the lab files, **immediately** present the lab to the user. Do NOT attempt to:
-- Start the dev server yourself (it runs forever and will block)
-- Check if ports are open
-- Open a browser
-- Wait for any server response
+After generating files, run the project's relevant typecheck or build. Reuse an
+existing development server when available. Otherwise start one with the host's
+managed background process support, record its process identity, and avoid blocking
+on a foreground server. If that support is unavailable, give the user the exact
+start command. Determine the actual port rather than assuming 3000.
 
-### What to Do
-
-1. **Output the lab location and URL:**
-   ```
-   ✅ Design Lab created!
-
-   I've generated 5 design variants in `.claude-design/lab/`
-
-   To view them:
-   1. Make sure your dev server is running (run `pnpm dev` if not)
-   2. Open: http://localhost:3000/__design_lab
-
-   Take your time reviewing the variants side-by-side, then come back and tell me:
-   - Which variant wins (A-E)
-   - What you like about it
-   - What should change
-   ```
-
-2. **Immediately proceed to Phase 5** - ask for feedback. Do NOT wait for the user to say they've opened the browser. Just present the feedback questions right away so they're ready when the user returns.
-
-### Why Not Start the Server
-
-Running `pnpm dev` or `npm run dev` starts a long-running process that never exits. If you run it, you'll wait forever. The user likely already has their dev server running, or can start it themselves in another terminal.
+Verify the route and feedback overlay in a browser when browser tools are available.
+For Vite without a router, present `/?design_lab=true` rather than `/__design_lab`.
+Show the verified URL and explain how to add comments, submit feedback, and paste
+it into the conversation. Then ask for feedback and wait for the user's answer.
+Do not clean up merely because an agent turn ends. Stop only a server this session
+started when the design session is finalized or cancelled.
 
 ---
 
@@ -516,7 +524,7 @@ Running `pnpm dev` or `npm run dev` starts a long-running process that never exi
 
 After presenting the lab URL, the user can provide feedback in two ways:
 1. **Interactive Feedback** (recommended): Using the built-in overlay in the browser
-2. **Manual Feedback**: Via AskUserQuestion in the terminal
+2. **Manual Feedback**: Via the available question tool in the terminal
 
 ### Interactive Feedback (Primary Method)
 
@@ -571,9 +579,9 @@ Go with Variant B's structure. Apply Variant A's button styling.
    - Secondary: The element description (e.g., "button with 'Submit'")
 3. **Apply the feedback** by editing the corresponding variant file
 
-### Fallback: Manual Feedback via AskUserQuestion
+### Fallback: Manual Feedback via the available question tool
 
-If the user prefers not to use the interactive overlay (or pastes manual feedback), use the AskUserQuestion flow below:
+If the user prefers not to use the interactive overlay (or pastes manual feedback), use the question flow below:
 
 ### Stage 1: Check for a Winner
 
@@ -665,6 +673,11 @@ Then proceed to **Phase 7: Final Preview**.
 
 ## Phase 7: Final Preview
 
+Before cleanup, capture the winning design's source and final decisions in the
+implementation plan or an explicitly requested permanent implementation. Do not
+delete the only copy of the selected design before preserving the handoff.
+
+
 Once user is satisfied:
 
 1. Create `.claude-design/preview/` directory:
@@ -711,8 +724,8 @@ When abort is detected:
    - "Are you sure you want to cancel? This will delete all the design lab files I created."
 
 2. **If confirmed, clean up immediately:**
-   - Delete `.claude-design/` directory entirely
-   - Delete temporary route files (`app/__design_lab/`, etc.)
+   - Delete owned temporary files according to the artifact record
+   - Delete temporary route files (`app/%5F_design_lab/`, etc.)
    - Do NOT generate any implementation plan
    - Do NOT update Design Memory
 
@@ -728,16 +741,16 @@ When user confirms (selected "Yes, finalize it"):
 ### 8.1: Cleanup
 
 Delete all temporary files:
-- Remove `.claude-design/` directory entirely
+- Remove owned temporary files according to the artifact record
 - Remove temporary route files:
-  - `app/__design_lab/` (Next.js App Router)
+  - `app/%5F_design_lab/` (Next.js App Router)
   - `pages/__design_lab.tsx` (Next.js Pages Router)
-  - `app/__design_preview/`
+  - `app/%5F_design_preview/`
   - `pages/__design_preview.tsx`
-  - Revert any `App.tsx` modifications (Vite)
+  - Reverse only recorded session integration edits in `App.tsx` (Vite)
 
 **Safety rules:**
-- ONLY delete files inside `.claude-design/`
+- Delete only artifacts recorded as created by this session, including recorded route files
 - ONLY delete route files that the plugin created
 - NEVER delete user-authored files
 - Verify file paths before deletion
@@ -904,8 +917,8 @@ The plugin supports these optional configurations (via environment or project co
 4. Plugin asks: Interview questions (5 steps)
 5. Plugin generates: Design Brief summary
 6. Plugin creates: `.claude-design/lab/` with 5 variants
-7. Plugin creates: `app/__design_lab/page.tsx`
-8. Plugin starts: `pnpm dev`
+7. Plugin creates: `app/%5F_design_lab/page.tsx`
+8. Plugin verifies: the lab using an existing or managed background dev server
 9. Plugin outputs: "Open http://localhost:3000/__design_lab"
 10. User reviews variants in browser
 11. Plugin asks: "Which variant wins?"
