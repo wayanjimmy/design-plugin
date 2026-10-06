@@ -37,4 +37,4 @@ When this command is invoked, follow the Design Lab skill workflow exactly. The 
 
 $ARGUMENTS will contain any target specified by the user.
 
-Begin by running the preflight detection, then start the interview process. Use the AskUserQuestion tool for all interview steps.
+Begin by running the preflight detection, then start the interview process. Use the host-compatible question flow from the skill for interview steps.

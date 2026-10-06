@@ -10,7 +10,7 @@ if [ -d ".claude-design" ]; then
 fi
 
 # Check for leftover route files (Next.js)
-if [ -d "app/__design_lab" ] || [ -d "app/__design_preview" ]; then
+if [ -d "app/__design_lab" ] || [ -d "app/__design_preview" ] || [ -d "app/%5F_design_lab" ] || [ -d "app/%5F_design_preview" ] || [ -d "src/app/%5F_design_lab" ] || [ -d "src/app/%5F_design_preview" ]; then
     echo "[Design Lab] Warning: Temporary route directories found in app/"
 fi
 
