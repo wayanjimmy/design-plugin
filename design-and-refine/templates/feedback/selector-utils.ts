@@ -175,7 +175,7 @@ function generateStructuralPath(
   let current: HTMLElement | null = element;
 
   while (current && current !== variantRoot && current.parentElement) {
-    const parent = current.parentElement;
+    const parent: HTMLElement = current.parentElement;
     const siblings = Array.from(parent.children).filter(
       (child) => child.tagName === current!.tagName
     );
