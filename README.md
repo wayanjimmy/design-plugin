@@ -213,3 +213,7 @@ for example "Use design-and-refine's design-lab skill to explore ProfileCard".
 Ask for `design-cleanup` to remove session-owned temporary artifacts.
 The Codex adapter shares the existing workflow and React feedback template;
 Claude commands and hooks are not required. Non-React overlays require adaptation.
+
+The Codex manifest explicitly disables automatic discovery of Claude's cleanup
+hooks. Cleanup runs when requested or when the design workflow is finalized,
+not after every agent turn.
